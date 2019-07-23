@@ -111,6 +111,7 @@ class CreateUserAuditor implements AuditProcessor {
  
  * `annotation` - containing an `@ParameterObject` annotation;
  * `annotation-processor` - an annotation processor for the compiler;
+ * `example` - project with usage examples and tests;
  
  ## How to use it
  
