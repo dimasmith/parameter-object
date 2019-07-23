@@ -1,3 +1,12 @@
 language: java
 jdk:
-  - openjdk8
+- openjdk8
+
+addons:
+  sonarcloud:
+    organization: "dimasmith"
+    token:
+      secure: ddGoy4bSld/ZT9HVafnFfFI2YpsGcWLXGj4++AMAJXREiGY0f90JLuM/Qk0SvgNe9AszHo+DTU6cNclRgqVeUcI5wAs6a0cHJpK5WlYsVsbxLG0xz+YBRDJHH+1Qs8R4iFz88cC5LNaJSv0R3dGkVzl0UZGhGl9L6O7j/IODMjt0v6g/mjAtp9A9f6SrLEb9TMHYHIVgY0gkI1cXL397SdTeO7neUkNBGNV5eIJoqetb8Hdf686uIrwlmokpC84LC9YQ49fbvkkPbT7ORvG1qeS/9Z0N5f+pXvOvt9Yk3BNyQxy6R5H5iHb/uXTLfkNf2gZE1PFJc9yftW3luWYF5f2r9ggQRWYCGVlrhKt/z7xQkDqSNxYdpOiEJRvcTiVGACenL8SdwXQVhtjQy+251H0UFbGZzfXE8mYjpGyG5yjnCksHsH6Up23u1tdbz0ZkO3OWhSIC2+nRrGBp92x309AS1WnTbVQ/NCO+j097x4l8x/vWlOe2usc5T/gQPaZ7Uw/iQAPdl0s1Z3ld9koQKsWYTkAh90VcLJgcrEu49VE7+vMVQYQvGB+pXByY0hXM2FWVt9ttN+t/EcuqrjKYeIFua2CoNEuHCsaiVUYiBknFa5ahL5t2OxUOG2M6HHgGUcLTfMa5DwI61kqBLa18qobQ/vKyW4QbRK/B2+HnUYo=
+
+script:
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
