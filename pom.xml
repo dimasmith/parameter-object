@@ -11,6 +11,7 @@
 
   <modules>
     <module>annotation</module>
+    <module>annotation-processor</module>
   </modules>
 
   <properties>
