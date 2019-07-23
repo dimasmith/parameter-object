@@ -1,6 +1,9 @@
 Parameter Object Generator
 ==========================
 
+[![Build Status](https://travis-ci.org/dimasmith/parameter-object.svg?branch=develop)](https://travis-ci.org/dimasmith/parameter-object)
+
+---
 Annotation and annotation processor to extract parameter objects from methods.
 
 ## Example
