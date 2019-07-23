@@ -16,10 +16,12 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
+import org.apache.commons.lang3.StringUtils;
 
 @SupportedAnnotationTypes("net.anatolich.parameterobject.ParameterObject")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -44,8 +46,10 @@ public class ParameterObjectAnnotationProcessor extends AbstractProcessor {
             final Name packageName = elementUtils.getPackageOf(classOfMethod).getSimpleName();
             final ClassName parametersClass = ClassName.get(
                 packageName.toString(),
-                annotatedMethod.getSimpleName().toString() + "Parameters");
+                StringUtils.capitalize(annotatedMethod.getSimpleName().toString()) + "Parameters");
             final TypeSpec parameterClassSpec = TypeSpec.classBuilder(parametersClass)
+                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.FINAL)
                 .build();
             try {
                 JavaFile.builder(packageName.toString(), parameterClassSpec)
@@ -55,6 +59,6 @@ public class ParameterObjectAnnotationProcessor extends AbstractProcessor {
                 messager.printMessage(Kind.ERROR, "Cannot generate parameters class. " + e.getMessage());
             }
         }
-        return false;
+        return true;
     }
 }
