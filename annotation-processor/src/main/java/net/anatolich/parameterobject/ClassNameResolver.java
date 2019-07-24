@@ -13,7 +13,7 @@ public class ClassNameResolver {
         this.elements = elements;
     }
 
-    public ClassName resolve(ExecutableElement method, ParameterObject annotation) {
+    public ClassName resolve(ExecutableElement method) {
         String methodName = method.getSimpleName().toString();
         String className = method.getEnclosingElement().getSimpleName().toString();
         String packageName = elements.getPackageOf(method.getEnclosingElement()).getQualifiedName().toString();
