@@ -11,4 +11,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface ParameterObject {
 
+    /**
+     * Desired package name. If not specified the parameter object will be in the same package
+     * as annotated class.
+     */
+    String packageName() default "";
+
+    /**
+     * Desired class name. If not specified then default class name generation strategy will be applied.
+     */
+    String className() default "";
 }

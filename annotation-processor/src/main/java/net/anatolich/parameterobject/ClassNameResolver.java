@@ -13,11 +13,35 @@ public class ClassNameResolver {
         this.elements = elements;
     }
 
-    public ClassName resolve(ExecutableElement method) {
+    public ClassName resolve(ExecutableElement method, ParameterObject annotation) {
+        return ClassName.get(
+            packageName(method, annotation),
+            className(method, annotation));
+    }
+
+    private String className(ExecutableElement method, ParameterObject annotation) {
+        if (StringUtils.isNotBlank(annotation.className())) {
+            return annotation.className();
+        } else {
+            return defaultClassName(method);
+        }
+    }
+
+    private String defaultClassName(ExecutableElement method) {
         String methodName = method.getSimpleName().toString();
         String className = method.getEnclosingElement().getSimpleName().toString();
-        String packageName = elements.getPackageOf(method.getEnclosingElement()).getQualifiedName().toString();
-        String poClassName = String.format("%s%sParameters", className, StringUtils.capitalize(methodName));
-        return ClassName.get(packageName, poClassName);
+        return String.format("%s%sParameters", className, StringUtils.capitalize(methodName));
+    }
+
+    private String packageName(ExecutableElement method, ParameterObject annotation) {
+        if (StringUtils.isNotBlank(annotation.packageName())) {
+            return annotation.packageName();
+        } else {
+            return defaultPackageName(method);
+        }
+    }
+
+    private String defaultPackageName(ExecutableElement method) {
+        return elements.getPackageOf(method.getEnclosingElement()).getQualifiedName().toString();
     }
 }

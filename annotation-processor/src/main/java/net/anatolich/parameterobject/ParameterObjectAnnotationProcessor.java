@@ -40,7 +40,8 @@ public class ParameterObjectAnnotationProcessor extends AbstractProcessor {
         final Set<? extends Element> annotatedMethods = roundEnv.getElementsAnnotatedWith(ParameterObject.class);
         for (Element annotatedMethod : annotatedMethods) {
             final ExecutableElement method = (ExecutableElement) annotatedMethod;
-            final ClassName parametersClassName = classNameResolver.resolve(method);
+            final ClassName parametersClassName = classNameResolver
+                .resolve(method, method.getAnnotation(ParameterObject.class));
 
             final ParameterObjectClassBuilder parameterObjectClassBuilder =
                 new ParameterObjectClassBuilder(parametersClassName, method);
