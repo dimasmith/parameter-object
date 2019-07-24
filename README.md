@@ -96,7 +96,7 @@ class CreateUserAuditor implements AuditProcessor {
  class UserService {
      
      @Audit(processor = CreateUserAuditor.class)
-     @ParameterObject("CreateUserParameters") // processor generates parameter object from signature
+     @ParameterObject // processor generates parameter object from signature
      User createUser(String firstName, String lastName, List<Order> orders) {
          // do some work
      }
@@ -138,3 +138,19 @@ class CreateUserAuditor implements AuditProcessor {
   ``` 
 
 Annotate methods of your classes with `@ParameterObject` annotation.
+
+## Features
+
+### Customize parameter object class names
+
+By default the parameter object will be named by the pattern: `<ClassName><MethodName>Parameters`.
+It will reside in the same package as the class with an annotated method.
+
+To change name and/or package use:
+
+```java
+@ParameterObject(packageName="my.parameters", className="AwesomeParameters")
+void awesomeMethod(String message) {}
+```
+
+When any of the attributes missing the default strategy is applied to missing component.
