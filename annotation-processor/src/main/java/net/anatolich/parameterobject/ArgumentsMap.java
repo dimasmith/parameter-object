@@ -13,6 +13,10 @@ public class ArgumentsMap {
     private static final ParameterizedTypeName IMPLEMENTATION_TYPE = ParameterizedTypeName
         .get(HashMap.class, String.class, Object.class);
 
+    private ArgumentsMap() {
+        throw new UnsupportedOperationException("must not be instantiated");
+    }
+
     static ParameterSpec parameter(String name) {
         return ParameterSpec.builder(TYPE, name).build();
     }
