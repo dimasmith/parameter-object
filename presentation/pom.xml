@@ -127,7 +127,7 @@
                             </requires>
                             <outputDirectory>${project.slides.directory}</outputDirectory>
                             <backend>revealjs</backend>
-                            <sourceHighlighter>rouge</sourceHighlighter>
+                            <!-- <sourceHighlighter>coderay</sourceHighlighter> -->
                             <attributes>
                                 <!--
                                     As we are downloading reveal.js in runtime, it sits in a nonstandard folder `reveal.js-${revealjs.version}`
@@ -135,12 +135,9 @@
                                 <revealjsdir>reveal.js-${revealjs.version}</revealjsdir>
                                 <!-- put here the reveal.js specific attributes -->
                                 <sourcedir>${basedir}/src/main/java</sourcedir>
-                                <revealjs_theme>black</revealjs_theme>
-                                <revealjs_transition>linear</revealjs_transition>
-                                <project-version>${project.version}</project-version>
-                                <!-- can use any pygments/rouge css here -->
-                                <rouge-css>class</rouge-css>
-                                <customcss>styles/monokai.css</customcss>
+                                <revealjs_theme>league</revealjs_theme>
+                                <revealjs_transition>convex</revealjs_transition>
+                                <project-version>${project.version}</project-version>                                
                             </attributes>
                         </configuration>
                     </execution>

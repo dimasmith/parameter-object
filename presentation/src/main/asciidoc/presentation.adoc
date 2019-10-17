@@ -1,34 +1,77 @@
 = Extend your compiler
 Dmytro Kovalchuk <dimasmith@gmail.com>
+:source-highlighter: highlightjs
 
-== Introduction
+== Example Service
 
-[%step]
-* This is a user manual for an example project.
-* This project does something.
-* We just haven't decided what that is yet.
+[source,java]
+----
+public class UserService {
 
-== Speaker Notes
+    @Audit
+    public UUID createUser(String username, char[] password) {
+        return UUID.randomUUID();
+    }
+}
+----
 
-Press the `*s*` key to access speaker notes.
+== Audit Describer
 
-[NOTE.speaker]
---
-You've unlocked the super secret notes area.
-Neat huh?
---
+[source,java]
+----
+public class CreateUserAudit 
+    implements AuditDescriber {
+
+    AuditEntry describeIntent(Map<String, Object> parameters) {
+        String username = (String) parameters.get("username");
+        String message = String.format(
+            "creating user %s", username);
+        return new AuditEntry.withMessage(message);
+    }
+}
+----
 
 == Source Code
 
 [source,java]
-.Java code from project
 ----
-include::{sourcedir}/example/StringUtils.java[tags=contains,indent=0]
+public final class CreateUserParameters {
+  private final String username;
+
+  private final char[] password;
+
+  CreateUserParameters(String username, char[] password) {
+    this.username = username;
+    this.password = password;
+  }
+
+  private CreateUserParameters(Map<String, Object> parameters) {
+    this.username = (String) parameters.get("username");
+    this.password = (char[]) parameters.get("password");
+  }
+
+  static CreateUserParameters fromMap(
+      Map<String, Object> parameters) {
+
+    return new CreateUserParameters(parameters);
+  }
+
+  Map<String, Object> toMap() {
+    final Map<String, Object> result = new HashMap<>();
+    result.put("username", username);
+    result.put("password", password);
+    return result;
+  }
+
+  String getUsername() {
+    return username;
+  }
+
+  char[] getPassword() {
+    return password;
+  }
+}
 ----
-
-This page was built by the following command:
-
- $ mvn
 
 == Blank screen
 
