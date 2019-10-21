@@ -9,15 +9,16 @@ import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 
 @SupportedAnnotationTypes("net.anatolich.parameterobject.ParameterObject")
@@ -25,21 +26,21 @@ import javax.tools.Diagnostic.Kind;
 @AutoService(Processor.class)
 public class ParameterObjectAnnotationProcessor extends AbstractProcessor {
 
-    private Filer filer;
-    private Messager messager;
-    private ClassNameResolver classNameResolver;
-
-    @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        filer = processingEnv.getFiler();
-        messager = processingEnv.getMessager();
-        classNameResolver = new ClassNameResolver(processingEnv.getElementUtils());
-    }
-
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        final Set<? extends Element> annotatedMethods = roundEnv.getElementsAnnotatedWith(ParameterObject.class);
-        for (Element annotatedMethod : annotatedMethods) {
-            final ExecutableElement method = (ExecutableElement) annotatedMethod;
+        final Filer filer = processingEnv.getFiler();
+        final Messager messager = processingEnv.getMessager();
+        final Elements elementUtils = processingEnv.getElementUtils();
+        final ClassNameResolver classNameResolver = new ClassNameResolver(elementUtils);
+
+        final Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(ParameterObject.class);
+        for (Element annotatedElement : annotatedElements) {
+            if (annotatedElement.getKind() != ElementKind.METHOD) {
+                messager.printMessage(Kind.ERROR,
+                    "ParameterObject anotation only allowed on methods",
+                    annotatedElement);
+            }
+
+            final ExecutableElement method = (ExecutableElement) annotatedElement;
             final ClassName parametersClassName = classNameResolver
                 .resolve(method, method.getAnnotation(ParameterObject.class));
 

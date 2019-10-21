@@ -108,6 +108,11 @@
                         <artifactId>asciidoctorj</artifactId>
                         <version>${asciidoctorj.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.asciidoctor</groupId>
+                        <artifactId>asciidoctorj-diagram</artifactId>
+                        <version>1.5.18</version>
+                    </dependency>
                 </dependencies>
                 <configuration>
                     <sourceDirectory>src/main/asciidoc</sourceDirectory>
@@ -127,7 +132,6 @@
                             </requires>
                             <outputDirectory>${project.slides.directory}</outputDirectory>
                             <backend>revealjs</backend>
-                            <!-- <sourceHighlighter>coderay</sourceHighlighter> -->
                             <attributes>
                                 <!--
                                     As we are downloading reveal.js in runtime, it sits in a nonstandard folder `reveal.js-${revealjs.version}`
@@ -136,8 +140,8 @@
                                 <!-- put here the reveal.js specific attributes -->
                                 <sourcedir>${basedir}/src/main/java</sourcedir>
                                 <revealjs_theme>league</revealjs_theme>
-                                <revealjs_transition>convex</revealjs_transition>
-                                <project-version>${project.version}</project-version>                                
+                                <revealjs_transition>slide</revealjs_transition>
+                                <project-version>${project.version}</project-version>
                             </attributes>
                         </configuration>
                     </execution>
