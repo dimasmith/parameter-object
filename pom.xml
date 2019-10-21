@@ -13,6 +13,7 @@
     <module>annotation</module>
     <module>annotation-processor</module>
     <module>example</module>
+    <module>presentation</module>
   </modules>
 
   <properties>

@@ -1,0 +1,389 @@
+= Extend your compiler
+Dmytro Kovalchuk <dimasmith@gmail.com>
+:source-highlighter: highlightjs
+
+== Disclaimer
+
+This is a work of fiction. Names, characters, places and incidents either are products of the author’s imagination or are used fictitiously. Any resemblance to actual events or locales or persons, living or dead, is entirely coincidental.
+
+== Service
+
+[.stretch]
+[source,java]
+----
+public class UserService {
+
+    @Audit // <1>
+    public UUID createUser(String username, char[] password) {
+        // complicated logic here
+        return newUser.getUuid();
+    }
+}
+----
+<1> This method is audited. A message is sent before and after the call.
+
+== Audit Describer
+
+[.stretch]
+[source,java]
+----
+public class CreateUserAudit implements AuditDescriber {
+
+    AuditEntry describeIntent(Map<String, Object> parameters) {
+        String username = (String) parameters.get("username");
+        String message = String.format(
+            "creating user %s", username);
+        return new AuditEntry.withMessage(message);
+    }
+}
+----
+
+== Unit test
+
+[.stretch]
+[source,java]
+----
+public class AuditTest {
+
+    @Test
+    public void initiatedMessageHasUserName() {
+        String username = "alice";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("username", username);
+        parameters.put("password", "s3cr3t".toCharArray());
+
+        AuditEntry entry = describer.describeIntent(parameters);
+
+        assertThat(entry.getMessage()).contains(username);
+    }
+}
+----
+
+== New Version
+
+New `UserService`! Now with login
+
+[.stretch]
+[source,java]
+----
+public class UserService {
+
+    @Audit // <1>
+    public UUID createUser(String login, char[] pass) {
+        // complicated logic here
+        return newUser.getUuid();
+    }
+}
+----
+
+=== Old Version
+
+[.stretch]
+[source,java]
+----
+public class UserService {
+
+    @Audit // <1>
+    public UUID createUser(String username, char[] pass) {
+        // complicated logic here
+        return newUser.getUuid();
+    }
+}
+----
+
+== Running the test
+
+- All green!
+- Runtime Error
+
+== Remedy
+
+- Create an object to easily access parameters
+- Build it from a map
+- Build a map from object
+- Keep it in sync with method
+
+== Parameter Object
+
+[.stretch]
+[source,java]
+----
+public class CreateUserParameters {
+    private final String username;
+    private final String password;
+    // getters and all-args-constructor
+    static CreateUserParameters fromMap(Map<String, Object>) {
+        //
+    }
+
+    Map<String, Object> toMap() {
+        //
+    }
+
+}
+----
+
+=== Updated Object
+
+[.stretch]
+[source,java]
+----
+public class CreateUserParameters {
+    private final String login;
+    private final String password;
+    // getters and all-args-constructor
+    static CreateUserParameters fromMap(Map<String, Object>) {
+        //
+    }
+
+    Map<String, Object> toMap() {
+        //
+    }
+
+}
+----
+
+== Keep in Sync?
+
+Compile it!
+
+- Introduce source-level annotation `@ParameterObject`
+- Extend compiler to process `@ParameterObject` annotation
+- The `@Audit` annotation will not work. Why?
+- Generate the code for the parameter object
+
+== Create the annotation
+
+[.stretch]
+[source,java]
+----
+@Documented
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.METHOD)
+public @interface ParameterObject {
+}
+----
+
+== Implement Processor
+
+[.stretch]
+[source,java]
+----
+import javax.annotation.processing.Processor;
+
+@SupportedAnnotationTypes("example.ParameterObject")
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@AutoService(Processor.class)
+public class ParameterObjectAnnotationProcessor
+             extends AbstractProcessor {
+
+    public boolean process(
+            Set<? extends TypeElement> annotations,
+            RoundEnvironment roundEnv) {
+        // parse code
+        // generate code
+        return true;
+    }
+}
+----
+
+== Processing
+
+- `javac` spins the full-blown jvm to run processors
+- Processing happens in rounds
+- Processors are called until all annotations processed
+
+== Processing Environment
+
+Helpers available in `ProcessingEnvironment`
+
+- `Filer` - allows to create source files
+- `Messager` - prints messages during compilation
+- `Elements` and `Types` - utility methods for AST entries
+
+Report an error:
+
+[source,java]
+----
+// this will fail the compilation
+messager.printMessage(Kind.ERROR, "error");
+----
+
+== Round Environment
+
+Get all elements annotated with `@ParameterObject`
+
+[source,java]
+----
+roundEnv.getElementsAnnotatedWith(ParameterObject.class)
+----
+
+== Getting methods
+
+[.stretch]
+[source,java]
+----
+Set<? extends Element> annotatedElements = roundEnv
+        .getElementsAnnotatedWith(ParameterObject.class);
+for (Element annotated : annotatedElements) {
+    if (annotated.getKind() != ElementKind.METHOD) {
+        messager.printMessage(Kind.ERROR,
+            "ParameterObject only allowed on methods",
+            annotated);
+    }
+
+    ExecutableElement method = (ExecutableElement) annotated;
+    // do something with method
+}
+----
+
+== Generate Code
+
+ JavaPoet to the rescue!
+
+- Comprehensive builders for various types
+- Java writers compatible with `Filer`
+- Templating to generate method bodies
+
+== Build the Class
+
+[.stretch]
+[source,java]
+----
+VariableElement parameter = method.getParameters().get(0);
+
+TypeSpec clazz = TypeSpec
+    .classBuilder("ClassName")
+        .addField(FieldSpec.builder(
+            TypeName.get(parameter.asType()),
+            parameter.getSimpleName().toString())
+            .build())
+        .build();
+
+JavaFile.builder("example", clazz)
+    .build()
+    .writeTo(filer);
+----
+
+== Some Poetry : Modifiers
+
+[.stretch]
+[source,java]
+----
+MethodSpec.methodBuilder("fromMap")
+    .addModifiers(Modifier.PUBLIC)
+    .addModifiers(Modifier.STATIC)
+    .returns(ParameterObject.class.getName())
+    .build();
+----
+
+=== Some Poetry : Method Body
+
+[source,java]
+----
+MethodSpec.methodBuilder("fromMap")
+    // ...
+    .addStatement(
+        "return new $T($N)",
+        ParameterObject.class.getName(),
+        argumentName)
+    .build();
+----
+
+Template variables
+
+- `$T` - type
+- `$N` - variable name
+- `$S` - string literal
+
+=== Some Poetry : Populate Map
+
+[.stretch]
+[source,java]
+----
+class Params {
+    Map data = new HashMap<>();
+
+    Params(String login) {
+        data.put("login", login);
+    }
+}
+
+CodeBlock.of("$N.put($S, $N);", "data", "login", "login");
+
+----
+
+=== Some Poetry : Read Map
+
+[.stretch]
+[source,java]
+----
+class Params {
+    String login;
+
+    Params fromMap(Map<String, Object> args) {
+        this.login = (String) args.get("login");
+    }
+}
+
+CodeBlock.of("this.$N = ($T) $N.get($S);",
+        "login", String.class, "args", "login");
+----
+
+== Use your processor : Service Loader
+
+Register as a service
+
+- Use `ServiceLoader` to register a processor
+
+----
+META-INF/services/javax.annotation.processor.Processor
+
+example.ParameterObjectAnnotationProcessor
+----
+
+- Googles `AutoService` library is nice for that
+- And it is yet another example of processor :)
+
+[source,java]
+----
+@AutoService(Processor.class)
+class MyProcessor {
+}
+----
+
+=== Use your processor : Explicitly
+
+[source,bash]
+.javac
+----
+javac -processor example.MyProcessor
+----
+
+[source,xml]
+.maven
+----
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.8.0</version>
+    <configuration>
+      <annotationProcessors>
+        <annotationProcessor>
+          example.MyProcessor
+        </annotationProcessor>
+      </annotationProcessors>
+    </configuration>
+</plugin>
+----
+
+== Thank You!
+
+Now it's time for Questions
+
+== References
+
+- https://www.baeldung.com/java-annotation-processing-builder
+- https://github.com/square/javapoet
+- http://hannesdorfmann.com/annotation-processing/annotationprocessing101
+- https://github.com/dimasmith/parameter-object
