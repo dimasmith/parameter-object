@@ -147,22 +147,8 @@ public class CreateUserParameters {
 
 Compile it!
 
-- Introduce source-level annotation `@ParameterObject`
-- Extend compiler to process `@ParameterObject` annotation
-- The `@Audit` annotation will not work. Why?
+- Extend compiler to process `@Audit` annotation
 - Generate the code for the parameter object
-
-== Create the annotation
-
-[.stretch]
-[source,java]
-----
-@Documented
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.METHOD)
-public @interface ParameterObject {
-}
-----
 
 == Implement Processor
 
@@ -171,7 +157,7 @@ public @interface ParameterObject {
 ----
 import javax.annotation.processing.Processor;
 
-@SupportedAnnotationTypes("example.ParameterObject")
+@SupportedAnnotationTypes("example.Audit")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
 public class ParameterObjectAnnotationProcessor
@@ -224,7 +210,7 @@ roundEnv.getElementsAnnotatedWith(ParameterObject.class)
 [source,java]
 ----
 Set<? extends Element> annotatedElements = roundEnv
-        .getElementsAnnotatedWith(ParameterObject.class);
+        .getElementsAnnotatedWith(Audit.class);
 for (Element annotated : annotatedElements) {
     if (annotated.getKind() != ElementKind.METHOD) {
         messager.printMessage(Kind.ERROR,
