@@ -1,6 +1,7 @@
 = Extend your compiler
 Dmytro Kovalchuk <dimasmith@gmail.com>
 :source-highlighter: highlightjs
+:revealjs_plugin_pdf: enabled
 
 == Disclaimer
 
@@ -13,14 +14,13 @@ This is a work of fiction. Names, characters, places and incidents either are pr
 ----
 public class UserService {
 
-    @Audit // <1>
+    @Audit
     public UUID createUser(String username, char[] password) {
         // complicated logic here
         return newUser.getUuid();
     }
 }
 ----
-<1> This method is audited. A message is sent before and after the call.
 
 == Audit Describer
 
@@ -112,12 +112,17 @@ public class CreateUserParameters {
     private final String username;
     private final String password;
     // getters and all-args-constructor
-    static CreateUserParameters fromMap(Map<String, Object>) {
-        //
+    static CreateUserParameters fromMap(Map<String, Object> data) {
+        String username = (String) data.get("username");
+        // ...
+        return new CreateUserParameters(username, ...);
     }
 
     Map<String, Object> toMap() {
-        //
+        Map<String, Object> data = new HashMap<>();
+        data.put("username", username);
+        // ...
+        return data;
     }
 
 }
@@ -197,11 +202,11 @@ messager.printMessage(Kind.ERROR, "error");
 
 == Round Environment
 
-Get all elements annotated with `@ParameterObject`
+Get all elements annotated with `@Audit`
 
 [source,java]
 ----
-roundEnv.getElementsAnnotatedWith(ParameterObject.class)
+roundEnv.getElementsAnnotatedWith(Audit.class)
 ----
 
 == Getting methods
@@ -220,6 +225,28 @@ for (Element annotated : annotatedElements) {
 
     ExecutableElement method = (ExecutableElement) annotated;
     // do something with method
+}
+----
+
+=== Class Structure
+
+AST elements from `javax.lang.model.element`
+
+[source,java]
+----
+package example; // PackageElement
+
+class Foo { // TypeElement
+
+    private int a; // VariableElement
+
+    public int getA() {} // ExecutableElement
+
+    public void setA(
+        int a) { // TypeParameterElement
+
+        }
+
 }
 ----
 
